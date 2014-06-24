@@ -1,0 +1,41 @@
+#page-mark-modal {
+    width: 100%;
+    height: 100%;
+    background-color: #ddd;
+    opacity: 0.5;
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    z-index: 99999;
+}
+
+#page-mark-pin-collection .pin {
+    position: absolute;
+    z-index: 999999;
+}
+
+#page-mark-pin-collection .pin .description .input {
+    width: 200px;
+    height: 60px;
+    padding: 5px 10px;
+    display: block;
+}
+
+#page-mark-pin-collection .pin .submit {
+    padding: 5px 10px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    background: #819ddd;
+    cursor: pointer;
+}
+
+#page-mark-pin-collection .pin .submit:hover {
+    background: #6364ee;
+}
+
+#page-mark-pin-collection .pin .message {
+    font-size: 14px;
+    color: #333;
+}

@@ -34,8 +34,9 @@
             "/js/background.js"
         ]
     },
-    "web_accessible_resources":[
+    "web_accessible_resources": [
         "/imgs/logo/20.png",
-        "/imgs/logo/32.png"
+        "/imgs/logo/32.png",
+        "/js/contentScripts.map"
     ]
 }

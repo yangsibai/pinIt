@@ -3,28 +3,51 @@
   var handleContextMenu, handleMouseEvent, handleRequest;
 
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    var cursorURL, path;
+    var cursorURL, modal, path;
     path = chrome.extension.getURL('/imgs/logo/20.png');
     cursorURL = "url('" + path + "'),auto";
-    return $("body").css('cursor', cursorURL).mouseup(handleMouseEvent).bind('contextmenu.pageMark', handleContextMenu);
+    $("body").css('cursor', cursorURL).mouseup(function(e) {
+      return handleMouseEvent(e, sendResponse);
+    }).bind('contextmenu.pageMark', handleContextMenu);
+    if (!$("#page-mark-modal").length) {
+      modal = $("<div id='page-mark-modal'/>");
+      return $('body').append(modal);
+    }
   });
 
   handleRequest = function(args) {
     return args;
   };
 
-  handleMouseEvent = function(event) {
-    var pin, pinCollection, pinURL;
+  handleMouseEvent = function(event, cb) {
+    var container, pin, pinCollection, pinURL;
+    container = $('.page-mark');
+    if (container.is(event.target) || (container.has(event.target).length > 0)) {
+      return;
+    }
     if (event.which === 1) {
+      $('.page-mark .description').remove();
       pinURL = chrome.extension.getURL('/imgs/logo/32.png');
-      pin = "<div style='position: absolute;left:" + (event.pageX - 6) + "px;top:" + (event.pageY - 6) + "px'>\n<img src='" + pinURL + "'/>\n</div>";
+      pin = "<div class='pin page-mark' style='left:" + (event.pageX - 6) + "px;top:" + (event.pageY - 6) + "px'>\n	<img src='" + pinURL + "'/>\n	<div class='description'>\n		<textarea class='input'></textarea>\n		<button class='submit'>Submit</button>\n	</div>\n</div>";
       if ($('#page-mark-pin-collection').length) {
-        return $('#page-mark-pin-collection').append(pin);
+        $('#page-mark-pin-collection').append(pin);
       } else {
-        pinCollection = $("<div></div>").attr('id', 'page-mark-pin-collection').append(pin);
-        return $('body').append(pinCollection);
+        pinCollection = $("<div/>").attr('id', 'page-mark-pin-collection').append(pin);
+        $('body').append(pinCollection);
       }
+      cb(event.pageX - 6, event.pageY - 6);
+      $('.page-mark .input').focus();
+      return $('.page-mark .submit').click(function() {
+        var text;
+        text = $(this).siblings('.input').val();
+        cb(event.pageX - 6, event.pageY - 6, text);
+        $(this).parent().parent().append("<p class='message'>" + text + "</p>");
+        return $(this).parent().remove();
+      });
     } else {
+      if ($("#page-mark-modal").length) {
+        $('#page-mark-modal').remove();
+      }
       $("body").css('cursor', "default").unbind('mouseup');
       return setTimeout(function() {
         return $("body").unbind('contextmenu.pageMark');
