@@ -8,9 +8,15 @@
       return chrome.tabs.sendMessage(tab.id, {
         args: ""
       }, function(x, y, text) {
-        return console.log(x, y, text);
+        console.log(x, y, text);
+        return alert(x);
       });
     }
+  });
+
+  chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    console.dir(sender);
+    return console.dir(request);
   });
 
 }).call(this);
