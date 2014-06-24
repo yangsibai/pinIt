@@ -1,5 +1,11 @@
 chrome.runtime.onMessage.addListener (request, sender, sendResponse)->
 #	sendResponse(handleRequest(request.args))
+	console.dir request.pins
+
+	if request.pins and request.pins.length > 0
+		for pin in request.pins
+			pinOnPage(pin.x, pin.y, pin.text)
+
 	path = chrome.extension.getURL('/imgs/logo/20.png')
 	cursorURL = "url('#{path}'),auto"
 	$("body").css('cursor', cursorURL).mouseup(handleMouseEvent).bind('contextmenu.pageMark', handleContextMenu)
@@ -19,25 +25,11 @@ handleMouseEvent = (event)->
 
 	if event.which is 1
 		$('.page-mark .description').remove()
-		pinURL = chrome.extension.getURL('/imgs/logo/32.png')
-
 		positionX = event.pageX - 6
 		positionY = event.pageY - 6
 
-		pin = """
-			<div class='pin page-mark' style='left:#{positionX}px;top:#{positionY}px'>
-				<img src='#{pinURL}'/>
-				<div class='description'>
-					<textarea class='input'></textarea>
-					<button class='submit'>Submit</button>
-				</div>
-			</div>
-			"""
-		if $('#page-mark-pin-collection').length
-			$('#page-mark-pin-collection').append(pin)
-		else
-			pinCollection = $("<div/>").attr('id', 'page-mark-pin-collection').append(pin)
-			$('body').append(pinCollection)
+		pinOnPage(positionX, positionY, '')
+
 		sendDataToBackground
 			x: positionX
 			y: positionY
@@ -54,13 +46,28 @@ handleMouseEvent = (event)->
 	else
 		if $("#page-mark-modal").length
 			$('#page-mark-modal').remove()
+		$(".page-mark .description").remove()
 		$("body").css('cursor', "default").unbind('mouseup');
 		setTimeout ()->
 			$("body").unbind('contextmenu.pageMark')
 		, 1
 
+pinOnPage = (positionX, positionY, text)->
+	pinURL = chrome.extension.getURL('/imgs/logo/32.png')
+	pin = """
+			<div class='pin page-mark' style='left:#{positionX}px;top:#{positionY}px'>
+				<img src='#{pinURL}'/>
+			</div>
+			"""
+	if $('#page-mark-pin-collection').length
+		$('#page-mark-pin-collection').append(pin)
+	else
+		pinCollection = $("<div/>").attr('id', 'page-mark-pin-collection').append(pin)
+		$('body').append(pinCollection)
+
 handleContextMenu = (e)->
 	false
 
 sendDataToBackground = (data)->
-	chrome.runtime.sendMessage data
+	chrome.runtime.sendMessage
+		data: data
