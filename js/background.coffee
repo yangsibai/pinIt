@@ -1,16 +1,61 @@
+serverAddress = "http://heshui.la"
+
 chrome.browserAction.onClicked.addListener (tab)->
 	if tab
 		chrome.tabs.sendMessage tab.id,
-			pins: getPin(tab.url)
+			cmd: "new"
+			pins: getLocalPin(tab.url)
 		, (data) ->
 			console.dir data
+
+		getRemotePin tab.url, (err, pins)->
+			if err
+				alert(err.message)
+			else if pins and pins.length > 0
+				chrome.tabs.sendMessage tab.id,
+					cmd: "data"
+					pins: pins
+				, (data)->
+					console.dir data
 
 chrome.runtime.onMessage.addListener (request, sender, sendResponse)->
 	request.data.url = sender.url
 	request.data.title = sender.tab.title
 	newPin(request.data)
 
+###
+    set browser action badge and title
+###
+chrome.tabs.onUpdated.addListener (tabId, changeInfo, tab) ->
+	$.get "#{serverAddress}/pin/countOnPage",
+		url: tab.url
+	, (res)->
+		if res.code is 0
+			chrome.browserAction.setBadgeText
+				text: res.count + ""
+				tabId: tabId
+			chrome.browserAction.setBadgeBackgroundColor
+				color: "#F00"
+				tabId: tabId
+			chrome.browserAction.setTitle
+				title: "#{res.count} pin"
+				tabId: tabId
+
+###
+    create new pin
+###
 newPin = (data) ->
+	#send to remote server
+	$.post "#{serverAddress}/pin/new", data, (res)->
+		if res.code isnt 0
+			alert(res.message)
+
+	saveLocal(data)
+
+###
+    save in local storage
+###
+saveLocal = (data)->
 	if localStorage and localStorage.data
 		storage = JSON.parse(localStorage.data);
 	else
@@ -30,7 +75,6 @@ newPin = (data) ->
 					y: data.y
 					text: data.text
 			break
-
 	unless foundURL
 		storage.push
 			url: data.url
@@ -40,14 +84,29 @@ newPin = (data) ->
 				y: data.y
 				text: data.text
 			]
-
 	localStorage.data = JSON.stringify(storage)
 
-getPin = (url)->
+###
+    get local pins
+###
+getLocalPin = (url)->
 	if localStorage and localStorage.data
 		storage = JSON.parse(localStorage.data)
 		for item in storage
 			if item.url is url
 				return item.pins
+	return []
 
-	[]
+###
+    get pin from remote server
+###
+getRemotePin = (url, cb)->
+	$.get "#{serverAddress}/pin/pinOnPage", {
+		url: url
+	}, (res)->
+		if res.code is 0
+			cb null, res.pins
+			for pin in res.pins
+				saveLocal(pin)
+		else
+			cb new Error(res.message)

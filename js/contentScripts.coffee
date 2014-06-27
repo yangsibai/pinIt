@@ -1,18 +1,20 @@
-chrome.runtime.onMessage.addListener (request, sender, sendResponse)->
-#	sendResponse(handleRequest(request.args))
-	console.dir request.pins
+pagePin = []
 
+chrome.runtime.onMessage.addListener (request, sender, sendResponse)->
+	console.log request.cmd
+	console.dir request.pins
 	if request.pins and request.pins.length > 0
 		for pin in request.pins
 			pinOnPage(pin.x, pin.y, pin.text)
 
-	path = chrome.extension.getURL('/imgs/logo/20.png')
-	cursorURL = "url('#{path}'),auto"
-	$("body").css('cursor', cursorURL).mouseup(handleMouseEvent).bind('contextmenu.pageMark', handleContextMenu)
+	if request.cmd is "new"
+		path = chrome.extension.getURL('/imgs/logo/20.png')
+		cursorURL = "url('#{path}'),auto"
+		$("body").css('cursor', cursorURL).mouseup(handleMouseEvent).bind('contextmenu.pageMark', handleContextMenu)
 
-	unless $("#page-mark-modal").length
-		modal = $("<div id='page-mark-modal'/>")
-		$('body').append(modal)
+		unless $("#page-mark-modal").length
+			modal = $("<div id='page-mark-modal'/>")
+			$('body').append(modal)
 
 handleRequest = (args) ->
 	return args
@@ -53,17 +55,22 @@ handleMouseEvent = (event)->
 		, 1
 
 pinOnPage = (positionX, positionY, text)->
-	pinURL = chrome.extension.getURL('/imgs/logo/32.png')
-	pin = """
-			<div class='pin page-mark' style='left:#{positionX}px;top:#{positionY}px'>
-				<img src='#{pinURL}'/>
-			</div>
-			"""
-	if $('#page-mark-pin-collection').length
-		$('#page-mark-pin-collection').append(pin)
-	else
-		pinCollection = $("<div/>").attr('id', 'page-mark-pin-collection').append(pin)
-		$('body').append(pinCollection)
+	for hasPin in pagePin
+		if hasPin.x is positionX and hasPin.y is positionY
+			found = true
+
+	unless found
+		pinURL = chrome.extension.getURL('/imgs/logo/32.png')
+		pin = """
+				<div class='pin page-mark' style='left:#{positionX}px;top:#{positionY}px'>
+					<img src='#{pinURL}'/>
+				</div>
+				"""
+		if $('#page-mark-pin-collection').length
+			$('#page-mark-pin-collection').append(pin)
+		else
+			pinCollection = $("<div/>").attr('id', 'page-mark-pin-collection').append(pin)
+			$('body').append(pinCollection)
 
 handleContextMenu = (e)->
 	false
