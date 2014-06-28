@@ -1,8 +1,8 @@
 {
     "manifest_version": 2,
-    "name": "page mark",
+    "name": "pinIt!",
     "version": "0.0.1",
-    "description": "add mark on web page",
+    "description": "add pin on web page",
     "permissions": [
         "storage",
         "tabs",
