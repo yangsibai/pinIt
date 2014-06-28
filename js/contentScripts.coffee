@@ -55,6 +55,7 @@ handleMouseEvent = (event)->
 		, 1
 
 pinOnPage = (positionX, positionY, text)->
+	found = false
 	for hasPin in pagePin
 		if hasPin.x is positionX and hasPin.y is positionY
 			found = true

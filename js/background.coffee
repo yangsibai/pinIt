@@ -1,4 +1,4 @@
-serverAddress = "http://heshui.la"
+serverAddress = "http://api.heshui.la"
 
 chrome.browserAction.onClicked.addListener (tab)->
 	if tab
@@ -27,7 +27,7 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse)->
     set browser action badge and title
 ###
 chrome.tabs.onUpdated.addListener (tabId, changeInfo, tab) ->
-	$.get "#{serverAddress}/pin/countOnPage",
+	ajax.get "#{serverAddress}/pin/countOnPage",
 		url: tab.url
 	, (res)->
 		if res.code is 0
@@ -46,7 +46,7 @@ chrome.tabs.onUpdated.addListener (tabId, changeInfo, tab) ->
 ###
 newPin = (data) ->
 	#send to remote server
-	$.post "#{serverAddress}/pin/new", data, (res)->
+	ajax.post "#{serverAddress}/pin/new", data, (res)->
 		if res.code isnt 0
 			alert(res.message)
 
@@ -101,7 +101,7 @@ getLocalPin = (url)->
     get pin from remote server
 ###
 getRemotePin = (url, cb)->
-	$.get "#{serverAddress}/pin/pinOnPage", {
+	ajax.get "#{serverAddress}/pin/pinOnPage", {
 		url: url
 	}, (res)->
 		if res.code is 0
@@ -110,3 +110,48 @@ getRemotePin = (url, cb)->
 				saveLocal(pin)
 		else
 			cb new Error(res.message)
+
+ajax =
+	x: ()->
+		if typeof XMLHttpRequest isnt "undefined"
+			return new XMLHttpRequest()
+		versions = [
+			"MSXML2.XmlHttp.5.0"
+			"MSXML2.XmlHttp.4.0"
+			"MSXML2.XmlHttp.3.0"
+			"MSXML2.XmlHttp.2.0"
+			"Microsoft.XmlHttp"
+		]
+		for version in versions
+			try
+				xhr = new ActiveXObject(version)
+				break
+			catch e
+			#			console.dir e
+		return xhr
+	send: (url, cb, method, data, sync)->
+		x = ajax.x()
+		x.open(method, url, sync)
+		x.onreadystatechange = ()->
+			if x.readyState is 4
+				try
+					cb JSON.parse(x.responseText)
+					return
+				catch e
+
+				cb x.responseText
+
+		if method is "POST"
+			x.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+		x.send(data)
+	get: (url, data, cb, sync)->
+		query = []
+		for key,value of data
+			query.push "#{encodeURIComponent(key)}=#{encodeURIComponent(value)}"
+		ajax.send url + "?" + query.join('&'), cb, 'GET', null, sync
+	post: (url, data, cb, sync)->
+		query = []
+		for key,value of data
+			query.push "#{encodeURIComponent(key)}=#{encodeURIComponent(value)}"
+		ajax.send url, cb, 'POST', query.join('&'), sync

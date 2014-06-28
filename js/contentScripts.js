@@ -71,6 +71,7 @@
 
   pinOnPage = function(positionX, positionY, text) {
     var found, hasPin, pin, pinCollection, pinURL, _i, _len;
+    found = false;
     for (_i = 0, _len = pagePin.length; _i < _len; _i++) {
       hasPin = pagePin[_i];
       if (hasPin.x === positionX && hasPin.y === positionY) {
