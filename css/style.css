@@ -16,6 +16,15 @@
     z-index: 999999;
 }
 
+#page-mark-pin-collection .pin img {
+    border: none;
+}
+
+#page-mark-pin-collection .pin img:hover {
+    cursor: move;
+    box-shadow: 0 0 10px #f02000;
+}
+
 #page-mark-pin-collection .pin .description .input {
     width: 200px;
     height: 60px;
