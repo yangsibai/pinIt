@@ -7,20 +7,19 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse)->
 		for pin in request.pins
 			pinOnPage(pin.x, pin.y, pin.text)
 
-	if request.cmd is "new"
-		path = chrome.extension.getURL('/imgs/logo/20.png')
-		cursorURL = "url('#{path}'),auto"
-		$("body").css('cursor', cursorURL).mouseup(handleMouseUp).bind('contextmenu.pageMark', handleContextMenu)
+	console.log("开始添加");
+	path = chrome.extension.getURL('/imgs/logo/20.png')
+	cursorURL = "url('#{path}'),auto"
+	$("body").css('cursor', cursorURL).mouseup(handleMouseUp).bind('contextmenu.pageMark', handleContextMenu)
 
-		unless $("#page-mark-modal").length
-			modal = $("<div id='page-mark-modal'/>")
-			$('body').append(modal)
+	unless $("#page-mark-modal").length
+		modal = $("<div id='page-mark-modal'/>")
+		$('body').append(modal)
 
 handleRequest = (args) ->
 	return args
 
 handleMouseUp = (event)->
-	console.log "mouse up"
 	draging = false
 	container = $('.page-mark')
 
@@ -35,6 +34,8 @@ handleMouseUp = (event)->
 		pinOnPage(positionX, positionY, '')
 
 		sendDataToBackground
+			width: $(window).width()
+			height: $(window).height()
 			x: positionX
 			y: positionY
 		$('.page-mark .input').focus()
@@ -75,15 +76,15 @@ pinOnPage = (positionX, positionY, text)->
 			pinCollection = $("<div/>").attr('id', 'page-mark-pin-collection').append(pin)
 			$('body').append(pinCollection)
 
-		$("#page-mark-pin-collection .pin")
-		.unbind('mousedown', mouseDown)
-		.bind("mousedown", mouseDown)
-
-		$("body")
-		.unbind("mousemove", mouseMove)
-		.unbind("mouseup", mouseUp)
-		.bind("mousemove", mouseMove)
-		.bind("mouseup", mouseUp)
+#		$("#page-mark-pin-collection .pin")
+#		.unbind('mousedown', mouseDown)
+#		.bind("mousedown", mouseDown)
+#
+#		$("body")
+#		.unbind("mousemove", mouseMove)
+#		.unbind("mouseup", mouseUp)
+#		.bind("mousemove", mouseMove)
+#		.bind("mouseup", mouseUp)
 
 mouseDown = (e)->
 	draging = true
